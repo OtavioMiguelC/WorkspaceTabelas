@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Database, LogOut, Lock, BookOpen, Shield } from 'lucide-react';
+import { LayoutDashboard, Users, Database, LogOut, Lock, BookOpen, Shield, Moon, Sun } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import logoImg from '../assets/logo.png'; 
 
@@ -10,6 +10,7 @@ export default function Sidebar() {
   
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false); // Estado para controlar o hover
+  const [isDark, setIsDark] = useState(true); // Estado do tema
 
   const items = [
     { path: '/', label: 'Ferramentas Gerais', icon: <LayoutDashboard size={20} /> },
@@ -83,17 +84,11 @@ export default function Sidebar() {
                
                <div className="absolute inset-0 bg-[#5C2EE9] blur-[40px] opacity-0 group-hover:opacity-70 transition-opacity duration-500 pointer-events-none"></div>
                
-               {isExpanded ? (
-                 <img 
-                   src={logoImg} 
-                   alt="Consolida Logo" 
-                   className="w-full h-auto object-contain brightness-0 invert opacity-90 group-hover:opacity-20 transition-opacity duration-500 relative z-10" 
-                 />
-               ) : (
-                 <div className="w-10 h-10 rounded-full bg-[#5C2EE9]/20 border border-[#5C2EE9]/50 flex items-center justify-center relative z-10">
-                    <span className="text-white font-black">C</span>
-                 </div>
-               )}
+               <img 
+                 src={logoImg} 
+                 alt="Consolida Logo" 
+                 className={`h-auto object-contain brightness-0 invert transition-all duration-500 relative z-10 ${isExpanded ? 'w-full opacity-90 group-hover:opacity-20' : 'w-10 opacity-80'}`} 
+               />
 
                {isExpanded && (
                  <div className="absolute inset-0 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden pointer-events-none" style={{ WebkitMaskImage: `url(${logoImg})`, WebkitMaskSize: 'contain', WebkitMaskRepeat: 'no-repeat', WebkitMaskPosition: 'left center' }}>
@@ -162,10 +157,26 @@ export default function Sidebar() {
               )}
            </div>
 
-           <button title={!isExpanded ? "Sair do Sistema" : ""} onClick={handleLogout} className={`flex items-center ${isExpanded ? 'justify-center gap-3 px-4' : 'justify-center'} text-red-500/80 hover:text-red-400 text-xs font-bold uppercase py-3 w-full rounded-xl hover:bg-red-500/10 transition-all group`}>
+           <button title={!isExpanded ? "Sair do Sistema" : ""} onClick={handleLogout} className={`flex items-center ${isExpanded ? 'justify-center gap-3 px-4' : 'justify-center'} text-red-500/80 hover:text-red-400 text-xs font-bold uppercase py-3 w-full rounded-xl hover:bg-red-500/10 transition-all group mb-4`}>
               <LogOut size={18} className="group-hover:scale-110 transition-transform shrink-0"/> 
               {isExpanded && <span>Sair do Sistema</span>}
            </button>
+
+           <div className={`flex justify-center border-t border-white/10 pt-4 ${!isExpanded ? 'px-0' : 'px-4'}`}>
+              <button 
+                onClick={() => setIsDark(!isDark)}
+                title="Mudar Tema"
+                className={`relative flex items-center p-1 rounded-full overflow-hidden transition-all duration-500 border border-white/10 ${isDark ? 'bg-[#09090b] shadow-[inset_0_0_10px_rgba(255,255,255,0.05)]' : 'bg-blue-300 shadow-[inset_0_0_15px_rgba(59,130,246,0.5)]'} ${isExpanded ? 'w-[72px]' : 'w-10'}`}
+              >
+                  {/* Fundo dinâmico */}
+                  <div className={`absolute inset-0 transition-opacity duration-1000 ${isDark ? 'opacity-100 bg-[url("data:image/svg+xml,%3Csvg width=\\\'10\\\' height=\\\'10\\\' xmlns=\\\'http://www.w3.org/2000/svg\\\'%3E%3Ccircle cx=\\\'2\\\' cy=\\\'2\\\' r=\\\'1\\\' fill=\\\'%23ffffff33\\\'/%3E%3C/svg%3E")]' : 'opacity-0'}`}></div>
+                  
+                  {/* O "Toggle" rolante */}
+                  <div className={`relative flex items-center justify-center w-8 h-8 rounded-full shadow-lg transition-transform duration-700 ease-[cubic-bezier(0.68,-0.55,0.27,1.55)] z-10 ${isDark ? 'translate-x-0 rotate-0 bg-gray-800 text-yellow-100 border border-white/10' : (isExpanded ? 'translate-x-[32px]' : 'translate-x-[0px]') + ' rotate-[360deg] bg-yellow-400 text-orange-600 border border-yellow-200'}`}>
+                      {isDark ? <Moon size={16} className="fill-current"/> : <Sun size={16} className="fill-current"/>}
+                  </div>
+              </button>
+           </div>
         </div>
       </div>
     </>
