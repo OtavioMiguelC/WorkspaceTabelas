@@ -6,8 +6,6 @@ import PrivateRoute from './components/PrivateRoute';
 // Importação de todas as Páginas
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
-import TDE from './pages/TDE'; 
-import Ibge from './pages/Ibge';
 import Afk from './pages/Afk'; 
 import Workspace from './pages/Workspace';
 import Usuarios from './pages/Usuarios'; // NOVA ROTA DE ADMINISTRAÇÃO
@@ -23,8 +21,6 @@ function App() {
           {/* Rotas Privadas (Protegidas pelo PrivateRoute) */}
           <Route element={<PrivateRoute />}>
              <Route path="/" element={<Dashboard />} />
-             <Route path="/tde" element={<TDE />} />
-             <Route path="/ibge" element={<Ibge />} />
              <Route path="/afk" element={<Afk />} />
              
              <Route path="/workspace" element={<Workspace />} />

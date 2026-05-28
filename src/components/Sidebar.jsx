@@ -23,9 +23,7 @@ export default function Sidebar() {
 
   const items = [
     { path: '/', label: 'Ferramentas Gerais', icon: <LayoutDashboard size={20} /> },
-    { path: '/workspace', label: 'Meu Workspace', icon: <BookOpen size={20} /> },
-    { path: '/tde', label: 'Cadastro TDE', icon: <Users size={20} /> },
-    { path: '/ibge', label: 'Base IBGE', icon: <Database size={20} /> }
+    { path: '/workspace', label: 'Meu Workspace', icon: <BookOpen size={20} /> }
   ];
 
   const handleLogout = () => {

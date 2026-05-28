@@ -1,178 +1,315 @@
 import React, { useState } from 'react';
-import { Clock, MapPinned, Route, RefreshCw, Calendar, FileSpreadsheet, ChevronDown, UploadCloud, Settings2 } from 'lucide-react';
+import { 
+  FileSpreadsheet, Clock, MapPinned, Route, RefreshCw, Calendar, 
+  Users, UploadCloud, Play, Download, Terminal, Settings2 
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 
+// Configuração das 7 Ferramentas disponíveis
+const TOOLS = [
+  { id: 'ibge', title: 'Base IBGE', desc: 'Preencher Códigos IBGE', icon: <FileSpreadsheet size={20}/>, color: 'emerald' },
+  { id: 'prazos', title: 'Prazos/Freq', desc: 'Cruzamento com Tabela', icon: <Clock size={20}/>, color: 'blue' },
+  { id: 'regiao', title: 'Criar Região', desc: 'Estruturação CEP/KM', icon: <MapPinned size={20}/>, color: 'purple' },
+  { id: 'rotas', title: 'Gerar Rotas', desc: 'Roteirização Logística', icon: <Route size={20}/>, color: 'orange' },
+  { id: 'sn', title: 'Conv. S/N', desc: 'Normalização Booleana', icon: <RefreshCw size={20}/>, color: 'cyan' },
+  { id: 'stqqs', title: 'Conv. STQQS', desc: 'Parsing de String Semanal', icon: <Calendar size={20}/>, color: 'pink' },
+  { id: 'restricoes', title: 'Restrições', desc: 'Geração Massiva de TDE', icon: <Users size={20}/>, color: 'rose' },
+];
+
 export default function Dashboard() {
-  const [expandedId, setExpandedId] = useState(null);
+  const [activeTool, setActiveTool] = useState(TOOLS[0]);
+  const [files, setFiles] = useState({});
+  const [forms, setForms] = useState({ limit: 500, category: 'TDE', type: 'J', useValue: true });
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [logs, setLogs] = useState(['> Sistema pronto. Selecione uma ferramenta.']);
 
-  const toggleCard = (id) => {
-    setExpandedId(expandedId === id ? null : id);
+  const addLog = (msg) => setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`]);
+
+  const handleFile = (key, e) => {
+    setFiles({ ...files, [key]: e.target.files[0] });
+    addLog(`Arquivo '${e.target.files[0].name}' carregado em [${key}].`);
   };
 
-  const processExcel = async (e, logicName) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const processAPI = async (endpoint, formData) => {
+    setIsProcessing(true);
+    addLog(`> Iniciando comunicação com API Vercel Python (${endpoint})...`);
+    
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        body: formData
+      });
 
-    toast.promise(
-      new Promise(resolve => setTimeout(resolve, 2500)),
-      {
-        loading: `A enviar ${file.name}...`,
-        success: <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{logicName} processado!</span>,
-        error: 'Erro na leitura do ficheiro.',
-      },
-      {
-        style: { borderRadius: '16px', background: 'rgba(18, 18, 18, 0.7)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '12px' },
-        success: { iconTheme: { primary: '#10b981', secondary: '#fff' } },
+      if (!response.ok) {
+        const err = await response.text();
+        throw new Error(err || 'Erro na API');
       }
-    );
-  };
 
-  return (
-    <div className="max-w-7xl mx-auto space-y-10">
+      addLog('> Processamento concluído no backend. Baixando arquivo...');
       
-      <style>{`
-        @keyframes border-glow-spin { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        .animate-magic-border { background-size: 200% 200%; animation: border-glow-spin 3s linear infinite; }
-      `}</style>
+      const blob = await response.blob();
+      let filename = "Download.xlsx";
+      const disposition = response.headers.get('content-disposition');
+      if (disposition && disposition.indexOf('filename=') !== -1) {
+          filename = disposition.split('filename=')[1].replace(/["']/g, '');
+      }
 
-      <div className="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-white/10 pb-6">
-        <div>
-          <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">Ferramentas Gerais</h1>
-          <p className="text-gray-400 mt-2 font-light">Selecione uma ferramenta abaixo para configurar e executar.</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        
-        <GlassCard 
-          id="prazos" title="Prazos e Frequência" desc="Cruzamento com Tabela de Prazos."
-          icon={<Clock size={24} className="text-white"/>} color="blue"
-          isExpanded={expandedId === 'prazos'} onToggle={() => toggleCard('prazos')}
-        >
-            <div className="grid grid-cols-2 gap-3 mt-2">
-                <UploadBtn label="Tabela Prazo" onChange={(e) => processExcel(e, 'TAB_PRAZOS')} />
-                <UploadBtn label="Base Dados" onChange={(e) => processExcel(e, 'BASE_PRAZOS')} />
-            </div>
-        </GlassCard>
-
-        <GlassCard 
-          id="ibge" title="Preencher IBGE" desc="Enriquecimento via Cache Local."
-          icon={<FileSpreadsheet size={24} className="text-white"/>} color="emerald"
-          isExpanded={expandedId === 'ibge'} onToggle={() => toggleCard('ibge')}
-        >
-            <UploadBtn label="Planilha Destino" onChange={(e) => processExcel(e, 'PREENCH_IBGE')} />
-        </GlassCard>
-
-        <GlassCard 
-          id="regiao" title="Criar Região" desc="Estruturação CEP/KM."
-          icon={<MapPinned size={24} className="text-white"/>} color="purple"
-          isExpanded={expandedId === 'regiao'} onToggle={() => toggleCard('regiao')}
-        >
-             <div className="space-y-3 mb-4">
-               <GlassSelect options={["Opção 1: Faixa de Km", "Opção 2: Prazos", "Opção 3: Frete"]} />
-               <GlassInput placeholder="Nome da Transportadora" />
-             </div>
-             <div className="grid grid-cols-2 gap-3">
-                <UploadBtn label="Base CEPs" onChange={(e) => processExcel(e, 'REGIAO_BASE')} />
-                <UploadBtn label="Tabela Ref." onChange={(e) => processExcel(e, 'REGIAO_TAB')} />
-             </div>
-        </GlassCard>
-
-        <GlassCard 
-          id="rotas" title="Gerar Rotas" desc="Roteirização Logística (Excel)."
-          icon={<Route size={24} className="text-white"/>} color="orange"
-          isExpanded={expandedId === 'rotas'} onToggle={() => toggleCard('rotas')}
-        >
-             <div className="space-y-3 mb-4">
-               <GlassInput placeholder="CNPJ da Transportadora" />
-               <GlassInput placeholder="Código IBGE Origem" />
-             </div>
-             <div className="grid grid-cols-2 gap-3">
-                <UploadBtn label="Planilha 1" onChange={(e) => processExcel(e, 'ROTAS_P1')} />
-                <UploadBtn label="Planilha 2" onChange={(e) => processExcel(e, 'ROTAS_P2')} />
-             </div>
-        </GlassCard>
-
-        <GlassCard 
-          id="sn" title="Converter S/N" desc="Normalização Booleana."
-          icon={<RefreshCw size={24} className="text-white"/>} color="cyan"
-          isExpanded={expandedId === 'sn'} onToggle={() => toggleCard('sn')}
-        >
-            <UploadBtn label="Processar Ficheiro" onChange={(e) => processExcel(e, 'CONVERT_SN')} />
-        </GlassCard>
-
-        <GlassCard 
-          id="stqqs" title="Converter STQQS" desc="Parsing de string semanal."
-          icon={<Calendar size={24} className="text-white"/>} color="pink"
-          isExpanded={expandedId === 'stqqs'} onToggle={() => toggleCard('stqqs')}
-        >
-            <UploadBtn label="Processar Ficheiro" onChange={(e) => processExcel(e, 'CONVERT_STQQS')} />
-        </GlassCard>
-
-      </div>
-    </div>
-  );
-}
-
-function GlassCard({ title, desc, icon, color, children, isExpanded, onToggle }) {
-  const styles = {
-    blue: { glow: "bg-blue-600", iconBox: "from-blue-500 to-indigo-600", magicBorder: "from-blue-500 via-indigo-400 to-blue-600", text: "text-blue-400" },
-    emerald: { glow: "bg-emerald-600", iconBox: "from-emerald-500 to-green-600", magicBorder: "from-emerald-500 via-green-400 to-emerald-600", text: "text-emerald-400" },
-    purple: { glow: "bg-purple-600", iconBox: "from-purple-500 to-fuchsia-600", magicBorder: "from-purple-500 via-pink-400 to-purple-600", text: "text-purple-400" },
-    orange: { glow: "bg-orange-600", iconBox: "from-orange-500 to-red-600", magicBorder: "from-orange-500 via-yellow-400 to-orange-600", text: "text-orange-400" },
-    cyan: { glow: "bg-cyan-600", iconBox: "from-cyan-500 to-blue-600", magicBorder: "from-cyan-500 via-teal-400 to-cyan-600", text: "text-cyan-400" },
-    pink: { glow: "bg-pink-600", iconBox: "from-pink-500 to-rose-600", magicBorder: "from-pink-500 via-rose-400 to-pink-600", text: "text-pink-400" },
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      
+      addLog(`> Arquivo '${filename}' salvo com sucesso!`);
+      toast.success('Processamento concluído!', { style: { background: '#121212', color: '#fff', border: '1px solid #10b981' } });
+      
+    } catch (error) {
+      addLog(`[ERRO] ${error.message}`);
+      toast.error('Falha no processamento.', { style: { background: '#121212', color: '#fff', border: '1px solid #ef4444' } });
+    } finally {
+      setIsProcessing(false);
+    }
   };
-  const theme = styles[color] || styles.blue;
+
+  const executeTool = async () => {
+    const fd = new FormData();
+    
+    switch (activeTool.id) {
+      case 'ibge':
+        if (!files.f1) return toast.error('Anexe a Planilha de Base!');
+        fd.append('file', files.f1);
+        await processAPI('/api/processar_ibge', fd);
+        break;
+        
+      case 'prazos':
+        if (!files.f1 || !files.f2) return toast.error('Anexe Planilha Destino e Base!');
+        fd.append('file_destino', files.f1);
+        fd.append('file_base', files.f2);
+        await processAPI('/api/processar_prazos', fd);
+        break;
+
+      case 'regiao':
+        if (!files.f1) return toast.error('Anexe a Planilha de Prazos (Base)!');
+        fd.append('file_base', files.f1);
+        fd.append('cnpj', forms.cnpj || '00000000000000');
+        await processAPI('/api/processar_regiao', fd);
+        break;
+
+      case 'rotas':
+        if (!files.f1) return toast.error('Anexe o Modelo de Região preenchido!');
+        fd.append('file_modelo_regioes', files.f1);
+        fd.append('tipo_rota', forms.rotaType || '1: ROTA - PRAZO');
+        fd.append('cnpj_rota', forms.cnpj || '0000');
+        fd.append('nome_transp_rota', forms.transpName || 'TRANSPORTADORA');
+        fd.append('desc_rota', forms.desc || '');
+        fd.append('tipo_origem', forms.origemType || 'Região');
+        fd.append('valor_origem', forms.origemVal || 'CENTRAL');
+        await processAPI('/api/processar_rotas', fd);
+        break;
+
+      case 'sn':
+        if (!files.f1) return toast.error('Anexe a Planilha S/N!');
+        fd.append('file', files.f1);
+        await processAPI('/api/converter_sn', fd);
+        break;
+
+      case 'stqqs':
+        if (!files.f1) return toast.error('Anexe a Planilha STQQS!');
+        fd.append('file', files.f1);
+        await processAPI('/api/converter_stqqs', fd);
+        break;
+
+      case 'restricoes':
+        if (!forms.textData) return toast.error('Cole os dados!');
+        fd.append('texto_rest', forms.textData);
+        fd.append('limite_linhas', forms.limit);
+        fd.append('categoria', forms.category);
+        fd.append('tipo_pessoa', forms.type);
+        fd.append('usar_valor', forms.useValue);
+        await processAPI('/api/restricoes', fd);
+        break;
+        
+      default:
+        toast.error("Ferramenta não implementada.");
+    }
+  };
+
+  const getThemeVars = (color) => {
+    const map = {
+      blue: { active: "text-blue-400 bg-blue-500/10 border-blue-500/30", text: "text-blue-400", bgGlow: "bg-blue-500", icon: "text-blue-500" },
+      emerald: { active: "text-emerald-400 bg-emerald-500/10 border-emerald-500/30", text: "text-emerald-400", bgGlow: "bg-emerald-500", icon: "text-emerald-500" },
+      purple: { active: "text-purple-400 bg-purple-500/10 border-purple-500/30", text: "text-purple-400", bgGlow: "bg-purple-500", icon: "text-purple-500" },
+      orange: { active: "text-orange-400 bg-orange-500/10 border-orange-500/30", text: "text-orange-400", bgGlow: "bg-orange-500", icon: "text-orange-500" },
+      cyan: { active: "text-cyan-400 bg-cyan-500/10 border-cyan-500/30", text: "text-cyan-400", bgGlow: "bg-cyan-500", icon: "text-cyan-500" },
+      pink: { active: "text-pink-400 bg-pink-500/10 border-pink-500/30", text: "text-pink-400", bgGlow: "bg-pink-500", icon: "text-pink-500" },
+      rose: { active: "text-rose-400 bg-rose-500/10 border-rose-500/30", text: "text-rose-400", bgGlow: "bg-rose-500", icon: "text-rose-500" },
+    };
+    return map[color] || map.blue;
+  };
+
+  const themeVars = getThemeVars(activeTool.color);
 
   return (
-    <div onClick={onToggle} className={`group relative w-full rounded-3xl p-[1px] transition-all duration-500 ease-out cursor-pointer overflow-hidden shadow-2xl ${isExpanded ? `bg-gradient-to-r ${theme.magicBorder} animate-magic-border shadow-[0_0_30px_rgba(0,0,0,0.5)]` : 'bg-white/10 hover:bg-white/20 hover:-translate-y-2'}`}>
-      <div className="relative w-full h-full bg-[#121212]/80 backdrop-blur-3xl rounded-[23px] overflow-hidden">
-        <div className={`absolute -top-12 -right-12 w-48 h-48 rounded-full ${theme.glow} opacity-20 blur-[80px] pointer-events-none transition-all duration-700 ease-in-out group-hover:opacity-40 group-hover:scale-125`}></div>
+    <div className="max-w-7xl mx-auto flex flex-col h-[calc(100vh-80px)] space-y-6">
+      
+      {/* HEADER MASTER-DETAIL */}
+      <div>
+        <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">Ferramentas Logísticas</h1>
+        <p className="text-gray-400 mt-2 font-light">Selecione uma ferramenta no carrossel abaixo e configure no painel central.</p>
+      </div>
 
-        <div className="relative z-10 flex items-center justify-between p-6">
-          <div className="flex items-center gap-5">
-            <div className={`p-3.5 rounded-2xl bg-gradient-to-br ${theme.iconBox} shadow-lg transform transition-all duration-500 ease-out ${isExpanded ? 'scale-110 rotate-3 shadow-lg shadow-black/20' : 'group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]'}`}>
-              {icon}
-            </div>
-            <div className="flex flex-col">
-              <h3 className="text-lg font-bold text-white tracking-wide group-hover:text-white transition-colors">{title}</h3>
-              <span className={`text-xs font-medium transition-colors duration-300 ${isExpanded ? theme.text : 'text-gray-500 group-hover:text-gray-400'}`}>{desc}</span>
-            </div>
-          </div>
-          <div className={`p-2 rounded-full border border-white/5 bg-white/5 transition-all duration-300 ${isExpanded ? 'bg-white/10 rotate-180 text-white' : 'group-hover:bg-white/10 text-gray-500 group-hover:text-white'}`}>
-            <ChevronDown size={20} />
-          </div>
-        </div>
+      {/* CARROSSEL DE FERRAMENTAS (Master) */}
+      <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar snap-x">
+        {TOOLS.map(tool => {
+          const tVars = getThemeVars(tool.color);
+          return (
+            <button 
+              key={tool.id} 
+              onClick={() => { setActiveTool(tool); setFiles({}); setLogs([`> Ferramenta '${tool.title}' selecionada.`]); }}
+              className={`snap-start shrink-0 relative flex flex-col items-start gap-2 p-5 rounded-2xl border transition-all duration-300 min-w-[200px] shadow-lg
+                ${activeTool.id === tool.id 
+                  ? `${tVars.active} shadow-[0_0_25px_rgba(255,255,255,0.05)] scale-105 z-10` 
+                  : 'bg-white/5 border-white/10 text-gray-500 hover:bg-white/10 hover:text-gray-300'}`}
+            >
+               <div className="p-2 rounded-lg bg-black/20">{tool.icon}</div>
+               <div className="text-left">
+                 <h3 className="font-bold text-sm uppercase tracking-wider">{tool.title}</h3>
+                 <p className="text-[10px] opacity-70 mt-1">{tool.desc}</p>
+               </div>
+               {activeTool.id === tool.id && <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-10 h-1 bg-current rounded-t-full shadow-[0_0_10px_currentColor]"></div>}
+            </button>
+          )
+        })}
+      </div>
 
-        <div className={`relative z-10 px-6 transition-all duration-500 ease-in-out overflow-hidden ${isExpanded ? 'max-h-[500px] opacity-100 pb-6' : 'max-h-0 opacity-0'}`}>
-          <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent mb-5"></div>
-          <div onClick={(e) => e.stopPropagation()}>{children}</div>
-        </div>
+      {/* PAINEL DE CONTROLE (Detail) */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[400px]">
+         
+         {/* ESQUERDA: INPUTS & UPLOADS */}
+         <div className="lg:col-span-5 bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl flex flex-col relative overflow-hidden">
+            <div className={`absolute top-0 right-0 w-48 h-48 rounded-full blur-[100px] opacity-10 pointer-events-none ${themeVars.bgGlow}`}></div>
+            
+            <h2 className={`text-2xl font-black uppercase tracking-widest mb-6 drop-shadow-md ${themeVars.text} flex items-center gap-3`}>
+               {activeTool.icon} {activeTool.title}
+            </h2>
+
+            <div className="flex-1 space-y-5 overflow-y-auto custom-scrollbar pr-2 relative z-10">
+                {/* RENDERIZAÇÃO DINÂMICA DE CAMPOS COM BASE NA FERRAMENTA */}
+                
+                {activeTool.id === 'ibge' && (
+                  <UploadZone label="Planilha de Base (Excel)" onChange={(e) => handleFile('f1', e)} file={files.f1} />
+                )}
+
+                {activeTool.id === 'prazos' && (
+                  <div className="space-y-4 h-full flex flex-col">
+                    <UploadZone label="1. Planilha DESTINO" onChange={(e) => handleFile('f1', e)} file={files.f1} />
+                    <UploadZone label="2. Planilha BASE" onChange={(e) => handleFile('f2', e)} file={files.f2} />
+                  </div>
+                )}
+
+                {activeTool.id === 'regiao' && (
+                  <>
+                    <GlassInput label="CNPJ Transportadora Padrão" val={forms.cnpj} onChange={e=>setForms({...forms, cnpj: e.target.value})} />
+                    <UploadZone label="Base de Prazos (Excel)" onChange={(e) => handleFile('f1', e)} file={files.f1} />
+                  </>
+                )}
+
+                {activeTool.id === 'rotas' && (
+                  <>
+                    <GlassInput label="CNPJ Transp." val={forms.cnpj} onChange={e=>setForms({...forms, cnpj: e.target.value})} />
+                    <GlassInput label="Nome Transp." val={forms.transpName} onChange={e=>setForms({...forms, transpName: e.target.value})} />
+                    <GlassInput label="Origem (IBGE ou Nome Região)" val={forms.origemVal} onChange={e=>setForms({...forms, origemVal: e.target.value})} />
+                    <UploadZone label="Modelo de Região Preenchido" onChange={(e) => handleFile('f1', e)} file={files.f1} />
+                  </>
+                )}
+
+                {(activeTool.id === 'sn' || activeTool.id === 'stqqs') && (
+                  <UploadZone label="Ficheiro Excel para Conversão" onChange={(e) => handleFile('f1', e)} file={files.f1} />
+                )}
+
+                {activeTool.id === 'restricoes' && (
+                  <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <GlassInput type="number" label="Linhas/Arq" val={forms.limit} onChange={e=>setForms({...forms, limit: e.target.value})} />
+                      <GlassInput label="Categoria" val={forms.category} onChange={e=>setForms({...forms, category: e.target.value})} />
+                    </div>
+                    <GlassInput label="Tipo Pessoa (J/F)" val={forms.type} onChange={e=>setForms({...forms, type: e.target.value})} />
+                    <div className="flex-1 min-h-[150px]">
+                      <label className="text-[10px] text-gray-400 font-bold uppercase mb-2 block ml-1">Dados (CNPJ | Razão | Valor)</label>
+                      <textarea 
+                        className="w-full h-full bg-[#09090b]/50 border border-white/10 rounded-xl p-4 text-[13px] text-emerald-400 placeholder-gray-600 outline-none focus:border-white/30 resize-none font-mono"
+                        placeholder="Ex: 12345678000100 EMPRESA LTDA 250,00"
+                        onChange={e=>setForms({...forms, textData: e.target.value})}
+                      ></textarea>
+                    </div>
+                  </>
+                )}
+
+            </div>
+
+            <button 
+                onClick={executeTool} disabled={isProcessing}
+                className={`w-full mt-6 relative overflow-hidden bg-white/10 hover:bg-white/20 text-white py-4 rounded-2xl font-bold uppercase tracking-widest transition-all shadow-lg border border-white/10 hover:border-white/30 disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+                <span className="relative z-10 flex items-center justify-center gap-3">
+                    {isProcessing ? <div className="h-5 w-5 rounded-full border-2 border-white/20 border-t-white animate-spin"></div> : <Play size={20} className="drop-shadow-md"/>}
+                    {isProcessing ? 'Processando API...' : 'Executar Processamento'}
+                </span>
+            </button>
+         </div>
+
+         {/* DIREITA: CONSOLE E SAÍDA */}
+         <div className="lg:col-span-7 bg-[#030303]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl flex flex-col relative overflow-hidden font-mono">
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:16px_16px] pointer-events-none"></div>
+            
+            <div className="flex items-center gap-3 text-gray-500 mb-4 border-b border-white/10 pb-4 relative z-10">
+               <Terminal size={16} className={`${themeVars.icon}`} />
+               <span className="uppercase tracking-widest font-bold text-xs">Vercel Backend Console Output</span>
+            </div>
+            
+            <div className="overflow-y-auto flex-1 space-y-2 text-emerald-400 relative z-10 custom-scrollbar pr-2 text-[12px]">
+               {logs.map((l, i) => (
+                   <div key={i} className="flex gap-2 opacity-90 animate-in slide-in-from-left-2 duration-300">
+                       <span className="text-gray-600 select-none opacity-50 shrink-0">~</span>
+                       <span>{l}</span>
+                   </div>
+               ))}
+            </div>
+
+            {/* BOTÃO DE DOWNLOAD MODELO CASO EXISTA */}
+            <div className="mt-4 pt-4 border-t border-white/10 relative z-10 flex justify-between items-center text-xs text-gray-500">
+                <span className="opacity-50">Certifique-se de que os arquivos Modelo estão na raiz do projeto.</span>
+                <button onClick={() => window.open('/api/download_base')} className="flex items-center gap-2 hover:text-white transition-colors">
+                  <Download size={14}/> Baixar Template Base Vazio
+                </button>
+            </div>
+         </div>
       </div>
     </div>
   );
 }
 
-const GlassInput = ({ ...props }) => (
-  <input {...props} style={{ fontFamily: "'JetBrains Mono', monospace" }} className="w-full bg-[#09090b]/50 border border-white/10 rounded-xl px-4 py-3 text-[13px] text-emerald-400 placeholder-gray-600 outline-none focus:border-white/30 focus:bg-[#09090b]/90 focus:shadow-[0_0_15px_rgba(255,255,255,0.05)] transition-all mb-2" />
-);
-
-const GlassSelect = ({ options }) => (
-  <div className="relative mb-2">
-    <select style={{ fontFamily: "'JetBrains Mono', monospace" }} className="w-full bg-[#09090b]/50 border border-white/10 rounded-xl px-4 py-3 text-[13px] text-emerald-400 outline-none focus:border-white/30 appearance-none cursor-pointer">
-      {options.map((opt, i) => <option key={i}>{opt}</option>)}
-    </select>
-    <Settings2 size={16} className="absolute right-4 top-3.5 text-gray-600 pointer-events-none"/>
+// ==========================================
+// COMPONENTES MENORES
+// ==========================================
+const GlassInput = ({ label, ...props }) => (
+  <div className="w-full">
+    {label && <label className="text-[10px] text-gray-400 font-bold uppercase mb-2 block ml-1">{label}</label>}
+    <input {...props} style={{ fontFamily: "'JetBrains Mono', monospace" }} className="w-full bg-[#09090b]/50 border border-white/10 rounded-xl px-4 py-3 text-[13px] text-gray-200 placeholder-gray-600 outline-none focus:border-white/30 focus:bg-[#09090b]/90 focus:shadow-[0_0_15px_rgba(255,255,255,0.05)] transition-all" />
   </div>
 );
 
-const UploadBtn = ({ label, onChange }) => (
-  <label className="group relative block w-full cursor-pointer overflow-hidden rounded-xl h-full">
+const UploadZone = ({ label, onChange, file }) => (
+  <label className="group relative block w-full cursor-pointer overflow-hidden rounded-xl h-full min-h-[100px]">
     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-    <div className="relative h-full bg-[#09090b]/70 border border-dashed border-white/20 hover:border-white/50 text-gray-400 hover:text-white py-4 px-2 rounded-xl flex flex-col items-center justify-center gap-2 transition-all duration-300 hover:bg-[#09090b]/90">
-        <UploadCloud size={20} className="text-gray-500 group-hover:text-[#5C2EE9] transition-colors duration-300"/>
-        <span style={{ fontFamily: "'JetBrains Mono', monospace" }} className="text-[10px] font-bold uppercase tracking-widest text-center mt-1 text-[#a1a1aa] group-hover:text-white transition-colors">{label}</span>
+    <div className={`relative h-full border border-dashed rounded-xl flex flex-col items-center justify-center gap-2 transition-all duration-300 ${file ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-[#09090b]/70 border-white/20 hover:border-white/50 text-gray-400 hover:text-white hover:bg-[#09090b]/90'}`}>
+        <UploadCloud size={24} className={file ? 'text-emerald-500' : 'text-gray-500 group-hover:text-white'}/>
+        <span style={{ fontFamily: "'JetBrains Mono', monospace" }} className="text-[10px] font-bold uppercase tracking-widest text-center mt-1 px-4">
+          {file ? file.name : label}
+        </span>
     </div>
     <input type="file" className="hidden" onChange={onChange} />
   </label>
