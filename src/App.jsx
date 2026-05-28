@@ -10,9 +10,9 @@ import Agendamento from './pages/Agendamento';
 import Cartao from './pages/Cartao';
 import TDE from './pages/TDE'; 
 import Ibge from './pages/Ibge';
-import Rota from './pages/Rota';
 import Afk from './pages/Afk'; 
-import Workspace from './pages/Workspace'; // <-- ADICIONE ESTA LINHA
+import Workspace from './pages/Workspace';
+import Usuarios from './pages/Usuarios'; // NOVA ROTA DE ADMINISTRAÇÃO
 
 function App() {
   return (
@@ -29,11 +29,10 @@ function App() {
              <Route path="/cartao" element={<Cartao />} />
              <Route path="/tde" element={<TDE />} />
              <Route path="/ibge" element={<Ibge />} />
-             <Route path="/rota" element={<Rota />} />
              <Route path="/afk" element={<Afk />} />
              
-             {/* NOVA ROTA: Meu Workspace */}
-             <Route path="/workspace" element={<Workspace />} /> {/* <-- ADICIONE ESTA LINHA */}
+             <Route path="/workspace" element={<Workspace />} />
+             <Route path="/usuarios" element={<Usuarios />} /> {/* NOVA ROTA */}
           </Route>
         </Routes>
       </AuthProvider>

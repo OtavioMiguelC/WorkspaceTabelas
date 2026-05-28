@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Calendar, Mail, Users, Map, Database, LogOut, Lock, BookOpen } from 'lucide-react';
+import { LayoutDashboard, Calendar, Mail, Users, Map, Database, LogOut, Lock, BookOpen, Shield } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import logoImg from '../assets/logo.png'; 
 
@@ -17,8 +17,7 @@ export default function Sidebar() {
     { path: '/agendamento', label: 'Agendamento TMS', icon: <Calendar size={20} /> },
     { path: '/cartao', label: 'Cartão Agend.', icon: <Mail size={20} /> },
     { path: '/tde', label: 'Cadastro TDE', icon: <Users size={20} /> },
-    { path: '/ibge', label: 'Base IBGE', icon: <Database size={20} /> },
-    { path: '/rota', label: 'Calculadora Rotas', icon: <Map size={20} /> },
+    { path: '/ibge', label: 'Base IBGE', icon: <Database size={20} /> }
   ];
 
   const handleLogout = () => {
@@ -130,7 +129,16 @@ export default function Sidebar() {
           </nav>
         </div>
         
-        <div className="border-t border-white/10 pt-6">
+        <div>
+           <div className="border-t border-white/10 pt-6 mb-6">
+              <Link to="/usuarios" className={`relative flex items-center gap-4 px-4 py-3.5 rounded-xl text-xs font-bold uppercase transition-all duration-300 group overflow-hidden ${location.pathname === '/usuarios' ? 'text-white bg-blue-500/10 border border-blue-500/30 shadow-[0_0_20px_rgba(59,130,246,0.15)]' : 'text-blue-500/70 hover:bg-blue-500/5 hover:text-blue-400 border border-transparent'}`}>
+                  <div className={`absolute inset-0 bg-gradient-to-r from-blue-500/20 to-transparent opacity-0 transition-opacity duration-300 ${location.pathname === '/usuarios' ? 'opacity-100' : 'group-hover:opacity-50'}`}></div>
+                  <span className="relative z-10"><Shield size={20} /></span>
+                  <span className="relative z-10 tracking-wide">Administração</span>
+                  {location.pathname === '/usuarios' && <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 bg-blue-500 rounded-r-full shadow-[0_0_10px_#3b82f6]"></div>}
+              </Link>
+           </div>
+           
            <div className="flex items-center gap-3 mb-4 px-2">
               <img src={user?.avatar} alt="User" className="w-8 h-8 rounded-full border border-white/10" />
               <div className="overflow-hidden">
