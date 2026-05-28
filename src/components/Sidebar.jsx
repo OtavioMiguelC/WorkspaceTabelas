@@ -23,6 +23,7 @@ export default function Sidebar() {
 
   const items = [
     { path: '/', label: 'Ferramentas Gerais', icon: <LayoutDashboard size={20} /> },
+    { path: '/restricoes', label: 'Restrições Pessoas', icon: <Users size={20} /> },
     { path: '/workspace', label: 'Meu Workspace', icon: <BookOpen size={20} /> }
   ];
 
