@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Calendar, Mail, Users, Map, Database, LogOut, Lock, BookOpen, Shield } from 'lucide-react';
+import { LayoutDashboard, Users, Database, LogOut, Lock, BookOpen, Shield } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import logoImg from '../assets/logo.png'; 
 
@@ -9,13 +9,11 @@ export default function Sidebar() {
   const { user, signOut } = useAuth();
   
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false); // Estado para controlar o hover
 
-  // LISTA DE ROTAS ATUALIZADA AQUI
   const items = [
     { path: '/', label: 'Ferramentas Gerais', icon: <LayoutDashboard size={20} /> },
     { path: '/workspace', label: 'Meu Workspace', icon: <BookOpen size={20} /> },
-    { path: '/agendamento', label: 'Agendamento TMS', icon: <Calendar size={20} /> },
-    { path: '/cartao', label: 'Cartão Agend.', icon: <Mail size={20} /> },
     { path: '/tde', label: 'Cadastro TDE', icon: <Users size={20} /> },
     { path: '/ibge', label: 'Base IBGE', icon: <Database size={20} /> }
   ];
@@ -69,43 +67,57 @@ export default function Sidebar() {
       )}
 
       {/* ==========================================
-          BARRA LATERAL 
+          BARRA LATERAL COLLAPSIBLE
           ========================================== */}
-      <div className="w-72 bg-[#09090b]/90 backdrop-blur-xl border-r border-white/5 flex flex-col justify-between p-6 z-20 shadow-2xl h-screen">
+      <div 
+        onMouseEnter={() => setIsExpanded(true)}
+        onMouseLeave={() => setIsExpanded(false)}
+        className={`bg-[#09090b]/90 backdrop-blur-xl border-r border-white/5 flex flex-col justify-between py-6 z-20 shadow-2xl h-screen transition-all duration-300 ease-in-out ${isExpanded ? 'w-72 px-6' : 'w-20 px-3'}`}
+      >
         <div>
           
-          <div className="mb-10 px-2 flex flex-col items-center md:items-start">
+          <div className={`mb-10 px-2 flex flex-col items-center ${isExpanded ? 'md:items-start' : 'md:items-center'}`}>
             
             {/* --- LOGO INTERATIVA --- */}
-            <Link to="/afk" className="relative w-48 mb-2 group cursor-pointer transition-all duration-500 hover:scale-110 drop-shadow-2xl z-50 block">
+            <Link to="/afk" className={`relative mb-2 group cursor-pointer transition-all duration-500 hover:scale-110 drop-shadow-2xl z-50 flex items-center justify-center ${isExpanded ? 'w-48' : 'w-10'}`}>
                
                <div className="absolute inset-0 bg-[#5C2EE9] blur-[40px] opacity-0 group-hover:opacity-70 transition-opacity duration-500 pointer-events-none"></div>
                
-               <img 
-                 src={logoImg} 
-                 alt="Consolida Logo" 
-                 className="w-full h-auto object-contain brightness-0 invert opacity-90 group-hover:opacity-20 transition-opacity duration-500 relative z-10" 
-               />
-
-               <div className="absolute inset-0 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden pointer-events-none" style={{ WebkitMaskImage: `url(${logoImg})`, WebkitMaskSize: 'contain', WebkitMaskRepeat: 'no-repeat', WebkitMaskPosition: 'left center' }}>
-                 
-                 <div className="absolute top-0 bottom-0 left-0 flex w-[200%] animate-led-continuous">
-                    <div className="w-1/2 relative h-full">
-                       <div className="absolute top-0 bottom-0 left-0 w-20 bg-gradient-to-r from-transparent via-[#b39afe] to-transparent skew-x-[-15deg] shadow-[0_0_30px_#9d7aff]"></div>
-                    </div>
-                    <div className="w-1/2 relative h-full">
-                       <div className="absolute top-0 bottom-0 left-0 w-20 bg-gradient-to-r from-transparent via-[#b39afe] to-transparent skew-x-[-15deg] shadow-[0_0_30px_#9d7aff]"></div>
-                    </div>
+               {isExpanded ? (
+                 <img 
+                   src={logoImg} 
+                   alt="Consolida Logo" 
+                   className="w-full h-auto object-contain brightness-0 invert opacity-90 group-hover:opacity-20 transition-opacity duration-500 relative z-10" 
+                 />
+               ) : (
+                 <div className="w-10 h-10 rounded-full bg-[#5C2EE9]/20 border border-[#5C2EE9]/50 flex items-center justify-center relative z-10">
+                    <span className="text-white font-black">C</span>
                  </div>
+               )}
 
-                 <img src={logoImg} alt="" className="relative z-10 w-full h-auto object-contain brightness-0 invert mix-blend-overlay opacity-80" />
-               </div>
+               {isExpanded && (
+                 <div className="absolute inset-0 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden pointer-events-none" style={{ WebkitMaskImage: `url(${logoImg})`, WebkitMaskSize: 'contain', WebkitMaskRepeat: 'no-repeat', WebkitMaskPosition: 'left center' }}>
+                   
+                   <div className="absolute top-0 bottom-0 left-0 flex w-[200%] animate-led-continuous">
+                      <div className="w-1/2 relative h-full">
+                         <div className="absolute top-0 bottom-0 left-0 w-20 bg-gradient-to-r from-transparent via-[#b39afe] to-transparent skew-x-[-15deg] shadow-[0_0_30px_#9d7aff]"></div>
+                      </div>
+                      <div className="w-1/2 relative h-full">
+                         <div className="absolute top-0 bottom-0 left-0 w-20 bg-gradient-to-r from-transparent via-[#b39afe] to-transparent skew-x-[-15deg] shadow-[0_0_30px_#9d7aff]"></div>
+                      </div>
+                   </div>
+
+                   <img src={logoImg} alt="" className="relative z-10 w-full h-auto object-contain brightness-0 invert mix-blend-overlay opacity-80" />
+                 </div>
+               )}
             </Link>
 
-            <div className="flex items-center gap-2 px-1">
-              <div className="h-1.5 w-1.5 rounded-full bg-[#5C2EE9] animate-pulse shadow-[0_0_10px_#5C2EE9]"></div>
-              <p className="text-[10px] text-gray-500 font-bold tracking-[0.2em] uppercase">Workspace</p>
-            </div>
+            {isExpanded && (
+              <div className="flex items-center gap-2 px-1">
+                <div className="h-1.5 w-1.5 rounded-full bg-[#5C2EE9] animate-pulse shadow-[0_0_10px_#5C2EE9]"></div>
+                <p className="text-[10px] text-gray-500 font-bold tracking-[0.2em] uppercase">Workspace</p>
+              </div>
+            )}
           </div>
 
           <nav className="space-y-3">
@@ -113,7 +125,8 @@ export default function Sidebar() {
               const isActive = location.pathname === item.path;
               return (
                 <Link key={item.path} to={item.path}
-                  className={`relative flex items-center gap-4 px-4 py-3.5 rounded-xl text-xs font-bold uppercase transition-all duration-300 group overflow-hidden ${
+                  title={!isExpanded ? item.label : ""}
+                  className={`relative flex items-center ${isExpanded ? 'gap-4 px-4 justify-start' : 'justify-center'} py-3.5 rounded-xl text-xs font-bold uppercase transition-all duration-300 group overflow-hidden ${
                     isActive 
                       ? 'text-white bg-white/5 border border-white/10 shadow-[0_0_20px_rgba(92,46,233,0.15)]' 
                       : 'text-gray-500 hover:bg-white/5 hover:text-gray-300 border border-transparent'
@@ -121,7 +134,7 @@ export default function Sidebar() {
                   
                   <div className={`absolute inset-0 bg-gradient-to-r from-[#5C2EE9]/20 to-transparent opacity-0 transition-opacity duration-300 ${isActive ? 'opacity-100' : 'group-hover:opacity-50'}`}></div>
                   <span className={`relative z-10 transition-colors ${isActive ? 'text-[#5C2EE9]' : 'text-gray-500 group-hover:text-white'}`}>{item.icon}</span>
-                  <span className="relative z-10 tracking-wide">{item.label}</span>
+                  {isExpanded && <span className="relative z-10 tracking-wide">{item.label}</span>}
                   {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 bg-[#5C2EE9] rounded-r-full shadow-[0_0_10px_#5C2EE9]"></div>}
                 </Link>
               )
@@ -130,26 +143,28 @@ export default function Sidebar() {
         </div>
         
         <div>
-           <div className="border-t border-white/10 pt-6 mb-6">
-              <Link to="/usuarios" className={`relative flex items-center gap-4 px-4 py-3.5 rounded-xl text-xs font-bold uppercase transition-all duration-300 group overflow-hidden ${location.pathname === '/usuarios' ? 'text-white bg-blue-500/10 border border-blue-500/30 shadow-[0_0_20px_rgba(59,130,246,0.15)]' : 'text-blue-500/70 hover:bg-blue-500/5 hover:text-blue-400 border border-transparent'}`}>
+           <div className={`border-t border-white/10 pt-6 mb-6 ${isExpanded ? '' : 'flex justify-center'}`}>
+              <Link to="/usuarios" title={!isExpanded ? "Administração" : ""} className={`relative flex items-center ${isExpanded ? 'gap-4 px-4 justify-start' : 'justify-center'} py-3.5 rounded-xl text-xs font-bold uppercase transition-all duration-300 group overflow-hidden ${location.pathname === '/usuarios' ? 'text-white bg-blue-500/10 border border-blue-500/30 shadow-[0_0_20px_rgba(59,130,246,0.15)]' : 'text-blue-500/70 hover:bg-blue-500/5 hover:text-blue-400 border border-transparent'}`}>
                   <div className={`absolute inset-0 bg-gradient-to-r from-blue-500/20 to-transparent opacity-0 transition-opacity duration-300 ${location.pathname === '/usuarios' ? 'opacity-100' : 'group-hover:opacity-50'}`}></div>
                   <span className="relative z-10"><Shield size={20} /></span>
-                  <span className="relative z-10 tracking-wide">Administração</span>
+                  {isExpanded && <span className="relative z-10 tracking-wide">Administração</span>}
                   {location.pathname === '/usuarios' && <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 bg-blue-500 rounded-r-full shadow-[0_0_10px_#3b82f6]"></div>}
               </Link>
            </div>
            
-           <div className="flex items-center gap-3 mb-4 px-2">
-              <img src={user?.avatar} alt="User" className="w-8 h-8 rounded-full border border-white/10" />
-              <div className="overflow-hidden">
-                  <p className="text-xs font-bold text-white truncate">{user?.name}</p>
-                  <p className="text-[10px] text-gray-500 truncate">{user?.email}</p>
-              </div>
+           <div className={`flex items-center gap-3 mb-4 ${isExpanded ? 'px-2' : 'justify-center'}`}>
+              <img src={user?.avatar} alt="User" className="w-8 h-8 rounded-full border border-white/10 shrink-0" />
+              {isExpanded && (
+                  <div className="overflow-hidden">
+                      <p className="text-xs font-bold text-white truncate">{user?.name}</p>
+                      <p className="text-[10px] text-gray-500 truncate">{user?.email}</p>
+                  </div>
+              )}
            </div>
 
-           <button onClick={handleLogout} className="flex items-center justify-center gap-3 text-red-500/80 hover:text-red-400 text-xs font-bold uppercase px-4 py-3 w-full rounded-xl hover:bg-red-500/10 transition-all group">
-              <LogOut size={18} className="group-hover:scale-110 transition-transform"/> 
-              <span>Sair do Sistema</span>
+           <button title={!isExpanded ? "Sair do Sistema" : ""} onClick={handleLogout} className={`flex items-center ${isExpanded ? 'justify-center gap-3 px-4' : 'justify-center'} text-red-500/80 hover:text-red-400 text-xs font-bold uppercase py-3 w-full rounded-xl hover:bg-red-500/10 transition-all group`}>
+              <LogOut size={18} className="group-hover:scale-110 transition-transform shrink-0"/> 
+              {isExpanded && <span>Sair do Sistema</span>}
            </button>
         </div>
       </div>
