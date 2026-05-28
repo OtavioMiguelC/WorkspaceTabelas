@@ -8,6 +8,7 @@ import json
 import io
 import zipfile
 import math
+import tempfile
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import StreamingResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -23,7 +24,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-CAMINHO_CACHE_IBGE = '/tmp/municipios_ibge_cache.json'
+CAMINHO_CACHE_IBGE = os.path.join(tempfile.gettempdir(), 'municipios_ibge_cache.json')
 # We expect the models to be uploaded with the source code in the root directory
 ARQUIVO_MODELO_REGIAO = os.path.join(os.getcwd(), 'Modelo Região.xlsx')
 ARQUIVO_MODELO_ROTA = os.path.join(os.getcwd(), 'Modelo Rota.xlsx')
