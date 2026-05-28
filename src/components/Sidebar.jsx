@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Users, Database, LogOut, Lock, BookOpen, Shield, Moon, Sun } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -11,6 +11,15 @@ export default function Sidebar() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false); // Estado para controlar o hover
   const [isDark, setIsDark] = useState(true); // Estado do tema
+
+  // Aplica a classe de light-theme no HTML globalmente
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.remove('light-theme');
+    } else {
+      document.documentElement.classList.add('light-theme');
+    }
+  }, [isDark]);
 
   const items = [
     { path: '/', label: 'Ferramentas Gerais', icon: <LayoutDashboard size={20} /> },
@@ -80,14 +89,14 @@ export default function Sidebar() {
           <div className={`mb-10 px-2 flex flex-col items-center ${isExpanded ? 'md:items-start' : 'md:items-center'}`}>
             
             {/* --- LOGO INTERATIVA --- */}
-            <Link to="/afk" className={`relative mb-2 group cursor-pointer transition-all duration-500 hover:scale-110 drop-shadow-2xl z-50 flex items-center justify-center ${isExpanded ? 'w-48' : 'w-10'}`}>
+            <Link to="/afk" className={`relative mb-2 group cursor-pointer transition-all duration-500 hover:scale-110 drop-shadow-2xl z-50 flex items-center justify-center ${isExpanded ? 'w-48' : 'w-14'}`}>
                
                <div className="absolute inset-0 bg-[#5C2EE9] blur-[40px] opacity-0 group-hover:opacity-70 transition-opacity duration-500 pointer-events-none"></div>
                
                <img 
                  src={logoImg} 
                  alt="Consolida Logo" 
-                 className={`h-auto object-contain brightness-0 invert transition-all duration-500 relative z-10 ${isExpanded ? 'w-full opacity-90 group-hover:opacity-20' : 'w-10 opacity-80'}`} 
+                 className={`h-auto object-contain brightness-0 invert transition-all duration-500 relative z-10 ${isExpanded ? 'w-full opacity-90 group-hover:opacity-20' : 'w-14 opacity-90'}`} 
                />
 
                {isExpanded && (

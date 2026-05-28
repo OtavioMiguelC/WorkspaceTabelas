@@ -19,3 +19,23 @@ body {
 .animate-float-blue { animation: float-blue 30s infinite ease-in-out; }
 .animate-progress { animation: cyber-progress 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
 .animate-led-continuous { animation: led-continuous 2.5s linear infinite; }
+
+/* ==========================================
+   MÁGICA DO LIGHT THEME (INVERT TRICK)
+   Inverte todas as cores escuras para claras e mantém o hue dos botões
+========================================== */
+html.light-theme {
+  filter: invert(1) hue-rotate(180deg);
+  background-color: #ededed;
+}
+
+/* Desinverte as imagens e avatars para não ficarem com as cores trocadas */
+html.light-theme img, 
+html.light-theme video {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* Tratamento especial para o botão de tema (não queremos inverter as cores do Sol/Lua) */
+html.light-theme button[title="Mudar Tema"] {
+  filter: invert(1) hue-rotate(180deg);
+}
