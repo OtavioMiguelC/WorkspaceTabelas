@@ -58,8 +58,8 @@ export default function Restricoes() {
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-20">
       <div>
-        <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-red-600 flex items-center gap-4">
-          <Users size={36} className="text-rose-500" /> Restrições de Pessoas
+        <h1 className="text-4xl font-black text-white flex items-center gap-4">
+          <Users size={36} className="text-white" /> Restrições de Pessoas
         </h1>
         <p className="text-gray-400 mt-2 font-light">Gere arquivos de cadastro de pessoas separando por valor e limite de linhas.</p>
       </div>
