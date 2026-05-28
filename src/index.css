@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilo global para manter o Dark Mode do seu projeto original */
+body {
+  @apply bg-[#121212] text-white;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Animações Globais */
+@keyframes float-purple { 0% { transform: translate(0, 0) scale(1); } 33% { transform: translate(30vw, 20vh) scale(1.2); } 66% { transform: translate(-10vw, 40vh) scale(0.9); } 100% { transform: translate(0, 0) scale(1); } }
+@keyframes float-blue { 0% { transform: translate(0, 0) scale(1); } 33% { transform: translate(-30vw, -20vh) scale(1.1); } 66% { transform: translate(20vw, -30vh) scale(1.3); } 100% { transform: translate(0, 0) scale(1); } }
+@keyframes cyber-progress { 0% { width: 0%; opacity: 1; } 80% { width: 100%; opacity: 1; } 100% { width: 100%; opacity: 0; } }
+@keyframes led-continuous { 0% { transform: translateX(-50%); } 100% { transform: translateX(0); } }
+
+.animate-float-purple { animation: float-purple 25s infinite ease-in-out; }
+.animate-float-blue { animation: float-blue 30s infinite ease-in-out; }
+.animate-progress { animation: cyber-progress 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+.animate-led-continuous { animation: led-continuous 2.5s linear infinite; }

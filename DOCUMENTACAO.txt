@@ -1,0 +1,22 @@
+======================================================
+           DOCUMENTAÇÃO DO PROJETO WORKSPACE WEB
+======================================================
+
+1. REGRAS DE NEGÓCIO (A ser preenchido)
+- (Pendente) Regras de processamento de planilhas.
+- O sistema deve focar primeiro em autenticação e gestão de usuários via Supabase.
+- Visual focado em Glassmorphism, temas escuros, com uso da cor #5C2EE9 (ou similares) e efeitos premium.
+
+2. ESTRUTURA DO CÓDIGO
+- Frontend: React (Vite) + TailwindCSS
+- Backend: (Futuro) Python com Flask em ambiente Vercel Serverless (pasta /api)
+- Banco de Dados / Auth: Supabase
+
+3. MANUAL DE USO (A ser preenchido)
+- Inicializar o projeto: npm install && npm run dev
+- ...
+
+4. CHANGELOG (O QUE FOI FEITO)
+- [28/05/2026] Projeto criado na pasta "Projeto Workspace Web".
+- [28/05/2026] Repositório Git inicializado e linkado a origin WorkspaceTabelas.
+- [28/05/2026] Criação deste arquivo de documentação.
